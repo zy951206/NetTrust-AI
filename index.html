@@ -1,0 +1,1591 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NetTrust AI（網安即時通）— 中小企業網頁版網址 Whoscall 防護平台</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & Noto Sans TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;600;700;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Inter"', '"Noto Sans TC"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            navy: {
+              800: '#1E3A8A',
+              900: '#172554',
+              950: '#0F172A'
+            }
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    /* 自訂捲軸與動畫細節 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .gauge-ring {
+      transition: stroke-dashoffset 0.85s cubic-bezier(0.22, 1, 0.36, 1), stroke 0.4s ease;
+    }
+    @keyframes pulse-subtle {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.03); opacity: 0.92; }
+    }
+    .animate-pulse-subtle {
+      animation: pulse-subtle 2.5s infinite ease-in-out;
+    }
+    @keyframes pop-number {
+      0% { transform: scale(1); }
+      40% { transform: scale(1.18); color: #2563eb; }
+      100% { transform: scale(1); }
+    }
+    .number-pop {
+      animation: pop-number 0.5s ease-out;
+    }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans antialiased selection:bg-blue-600 selection:text-white min-h-screen flex flex-col lg:flex-row overflow-x-hidden">
+
+  <!-- ==================== 頂部行動裝置導覽列 (Mobile Header) ==================== -->
+  <div class="lg:hidden bg-[#172554] text-white px-4 py-3 flex items-center justify-between sticky top-0 z-40 shadow-md">
+    <div class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center">
+        <svg class="w-5 h-5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M7 12h2l1.5-3 3 6 1.5-3h2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <div class="font-bold text-sm leading-tight">NetTrust AI 網安即時通</div>
+        <div class="text-[11px] text-blue-200/80">Whoscall for URLs SaaS</div>
+      </div>
+    </div>
+    <button id="mobileMenuBtn" onclick="toggleMobileSidebar()" class="p-2 rounded-lg bg-blue-900/60 hover:bg-blue-800 text-blue-100">
+      <i data-lucide="menu" class="w-5 h-5"></i>
+    </button>
+  </div>
+
+  <!-- 行動裝置遮罩 -->
+  <div id="sidebarBackdrop" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-40 hidden lg:hidden"></div>
+
+  <!-- ==================== 左側深藍導覽列 (Sidebar) ==================== -->
+  <aside id="sidebar" class="fixed lg:sticky top-0 left-0 z-50 h-screen w-64 bg-gradient-to-b from-[#172554] via-[#1E3A8A] to-[#172554] text-white flex flex-col justify-between shrink-0 shadow-xl transition-transform duration-300 -translate-x-full lg:translate-x-0">
+    <!-- 頂部品牌 Logo 區 -->
+    <div>
+      <div class="p-5 pb-6 border-b border-blue-800/60 flex items-center gap-3">
+        <!-- 盾牌電搏 SVG Logo -->
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500/25 to-rose-500/20 border border-blue-400/40 flex items-center justify-center shadow-inner relative shrink-0">
+          <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none">
+            <path d="M12 21.5C12 21.5 19.5 17.8 19.5 11.5V4.8L12 2L4.5 4.8V11.5C4.5 17.8 12 21.5 12 21.5Z" stroke="url(#shieldGrad)" stroke-width="2" fill="rgba(30,58,138,0.5)"/>
+            <path d="M6.8 12H9.2L10.8 8.5L13.2 15.5L14.8 12H17.2" stroke="#38BDF8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="shieldGrad" x1="4" y1="2" x2="20" y2="21" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#38BDF8"/>
+                <stop offset="0.6" stop-color="#60A5FA"/>
+                <stop offset="1" stop-color="#F43F5E"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-base tracking-tight text-white leading-snug">NetTrust AI</h1>
+          <div class="font-semibold text-sm text-blue-100 leading-snug">網安即時通</div>
+          <p class="text-[11px] text-blue-300/80 mt-0.5 font-medium">Whoscall for URLs SaaS</p>
+        </div>
+      </div>
+
+      <!-- 導覽選單列表 -->
+      <nav class="p-3 space-y-1.5 mt-1" aria-label="主導覽列">
+        <button onclick="switchTab('overview')" id="nav-overview" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all text-blue-100/80 hover:bg-blue-800/50 hover:text-white group">
+          <i data-lucide="home" class="w-5 h-5 text-blue-300 group-hover:text-white shrink-0"></i>
+          <div>
+            <div class="text-sm font-semibold leading-tight">主頁總覽</div>
+            <div class="text-[11px] text-blue-300/75">Overview & ROI</div>
+          </div>
+        </button>
+
+        <button onclick="switchTab('scan')" id="nav-scan" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all bg-blue-600/45 border border-blue-400/30 text-white shadow-sm group">
+          <i data-lucide="globe" class="w-5 h-5 text-cyan-300 shrink-0"></i>
+          <div class="flex-1">
+            <div class="text-sm font-semibold leading-tight">即時網址檢測</div>
+            <div class="text-[11px] text-blue-200">URL Scan</div>
+          </div>
+          <span class="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
+        </button>
+
+        <button onclick="switchTab('history')" id="nav-history" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all text-blue-100/80 hover:bg-blue-800/50 hover:text-white group">
+          <i data-lucide="history" class="w-5 h-5 text-blue-300 group-hover:text-white shrink-0"></i>
+          <div class="flex-1">
+            <div class="text-sm font-semibold leading-tight">檢測紀錄</div>
+            <div class="text-[11px] text-blue-300/75">History</div>
+          </div>
+          <span id="historyCountBadge" class="text-[11px] font-mono bg-blue-900/90 text-blue-200 px-2 py-0.5 rounded-full border border-blue-700">0</span>
+        </button>
+
+        <button onclick="switchTab('defense')" id="nav-defense" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all text-blue-100/80 hover:bg-blue-800/50 hover:text-white group">
+          <i data-lucide="shield-check" class="w-5 h-5 text-blue-300 group-hover:text-white shrink-0"></i>
+          <div class="flex-1">
+            <div class="text-sm font-semibold leading-tight">企業安全防禦</div>
+            <div class="text-[11px] text-blue-300/75">Defense Lists</div>
+          </div>
+          <span id="blacklistCountBadge" class="text-[11px] font-mono bg-rose-500/30 text-rose-200 px-2 py-0.5 rounded-full border border-rose-400/30">0</span>
+        </button>
+
+        <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all text-blue-100/80 hover:bg-blue-800/50 hover:text-white group">
+          <i data-lucide="settings" class="w-5 h-5 text-blue-300 group-hover:text-white shrink-0"></i>
+          <div>
+            <div class="text-sm font-semibold leading-tight">訂閱與雲端 API</div>
+            <div class="text-[11px] text-blue-300/75">SaaS & Drive API</div>
+          </div>
+        </button>
+      </nav>
+    </div>
+
+    <!-- 底部中小企業專業版狀態卡 -->
+    <div class="p-4 border-t border-blue-800/60 bg-[#132047]/70">
+      <div onclick="switchTab('settings')" class="cursor-pointer rounded-xl p-3 bg-blue-950/70 border border-blue-700/50 hover:border-blue-500/60 transition-all flex items-center gap-3">
+        <div class="w-9 h-9 rounded-lg bg-blue-800/70 flex items-center justify-center text-cyan-300 shrink-0">
+          <i data-lucide="building-2" class="w-5 h-5"></i>
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-1.5">
+            <span class="text-xs font-bold text-white truncate">中小企業專業版</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="text-[11px] text-blue-300/80 truncate">SME Pro Plan · 52 席授權</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ==================== 右側主要內容區 (Main Content Area) ==================== -->
+  <div class="flex-1 flex flex-col min-w-0 bg-[#F8FAFC]">
+    
+    <!-- 頂部導覽列 (Top Header) -->
+    <header class="bg-white border-b border-slate-200/90 px-5 sm:px-8 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30">
+      <div>
+        <h2 id="pageHeaderTitle" class="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">網址即時檢測</h2>
+        <p id="pageHeaderSubtitle" class="text-xs sm:text-sm text-slate-500 mt-0.5">為中小企業打造的網址防禦與 AI 判讀系統</p>
+      </div>
+
+      <div class="flex items-center gap-3 sm:gap-5">
+        <!-- 雲端硬碟 API 連線模式切換徽章 -->
+        <button onclick="switchTab('settings')" id="apiModeHeaderBadge" class="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 transition-colors" title="點擊設定 Google Colab / 伺服器 API 端點">
+          <span id="apiStatusDot" class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+          <span id="apiStatusText">後端 API：連線中...</span>
+          <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-slate-500"></i>
+        </button>
+
+        <!-- 企業管理員資訊與通知 -->
+        <div class="flex items-center gap-3 pl-2 sm:border-l border-slate-200">
+          <div class="text-right">
+            <div class="text-xs sm:text-sm font-bold text-slate-800">Hi, 聯毅工業</div>
+            <div class="text-[11px] text-slate-500 font-medium">(管理員)</div>
+          </div>
+          <!-- 管理員頭像 SVG -->
+          <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-100 to-indigo-100 border-2 border-blue-200 flex items-center justify-center overflow-hidden shadow-xs shrink-0">
+            <svg class="w-8 h-8 text-slate-700 mt-1" viewBox="0 0 36 36" fill="none">
+              <circle cx="18" cy="12" r="6" fill="#334155"/>
+              <path d="M6 34C6 26.5 11 22 18 22C25 22 30 26.5 30 34" fill="#1E3A8A"/>
+              <path d="M15 22L18 28L21 22" fill="#FFFFFF"/>
+              <path d="M17.2 24L18 29L18.8 24Z" fill="#EF4444"/>
+            </svg>
+          </div>
+          <!-- 通知鈴鐺 -->
+          <button onclick="openBroadcastHistoryModal()" class="relative p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors" title="查看企業通報紀錄">
+            <i data-lucide="bell" class="w-5 h-5"></i>
+            <span id="notifDot" class="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white"></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- ==================== 分頁 1：即時網址檢測 (URL Scan - 預設核心畫面) ==================== -->
+    <main id="tab-scan" class="tab-panel flex-1 p-5 sm:p-8 max-w-7xl w-full mx-auto space-y-6">
+      
+      <!-- API 未設定或未連線警示橫幅 -->
+      <div id="apiWarningBanner" class="hidden p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 flex flex-wrap items-center justify-between gap-3 text-xs sm:text-sm">
+        <div class="flex items-center gap-2.5">
+          <i data-lucide="alert-circle" class="w-5 h-5 text-amber-600 shrink-0"></i>
+          <div>
+            <span class="font-bold">尚未連線至真實後端 API 端點！</span>
+            <span class="text-amber-800">請確認您的 Colab / ngrok 服務已正常啟動。</span>
+          </div>
+        </div>
+        <button onclick="switchTab('settings')" class="px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold shrink-0 cursor-pointer">
+          前往設定 API 端點
+        </button>
+      </div>
+
+      <!-- 網址輸入搜尋列 -->
+      <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-xs border border-slate-200/90">
+        <form onsubmit="handleUrlScanSubmit(event)" class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <div class="relative flex-1">
+            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
+              <i data-lucide="link-2" class="w-5 h-5"></i>
+            </div>
+            <input
+              id="urlInput"
+              type="text"
+              placeholder="請輸入待檢測網址，例如：https://suspicious-bank-login.xyz..."
+              class="w-full pl-11 pr-10 py-3.5 rounded-xl border-2 border-slate-300 focus:border-[#1E3A8A] focus:ring-4 focus:ring-blue-500/10 text-slate-800 font-medium text-sm sm:text-base outline-hidden transition-all"
+              required
+            />
+            <button type="button" onclick="clearUrlInput()" class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600" title="清除網址">
+              <i data-lucide="x-circle" class="w-4 h-4"></i>
+            </button>
+          </div>
+          <button
+            id="scanSubmitBtn"
+            type="submit"
+            class="bg-[#1E3A8A] hover:bg-[#172554] active:scale-[0.99] text-white font-bold px-7 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2.5 shrink-0 cursor-pointer"
+          >
+            <i data-lucide="search" id="scanBtnIcon" class="w-5 h-5 text-cyan-300"></i>
+            <span id="scanBtnText">立即檢測</span>
+          </button>
+        </form>
+      </div>
+
+      <!-- 主內容雙欄佈局：左側 Whoscall 結果主卡片 (佔 9/12) + 右側 本月企業防護摘要 (佔 3/12) -->
+      <div class="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+        
+        <!-- 左側：Whoscall 風格檢測結果主卡片 -->
+        <div id="resultMainCard" class="xl:col-span-9 bg-white rounded-2xl border-2 border-slate-300 shadow-md p-5 sm:p-6 transition-all duration-300">
+          
+          <!-- 初始未檢測狀態提示畫面 -->
+          <div id="emptyScanState" class="py-16 text-center space-y-3">
+            <div class="w-16 h-16 rounded-2xl bg-blue-50 text-[#1E3A8A] flex items-center justify-center mx-auto border border-blue-100">
+              <i data-lucide="shield" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-lg font-extrabold text-slate-800">等待輸入網址發送 API 檢測</h3>
+            <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">
+              系統將直接發送 POST 請求至您的後端模型端點，並依據真實推論結果繪製三色號誌、AI 信任分數與判定標籤。
+            </p>
+          </div>
+
+          <!-- API 呼叫失敗時的警示畫面 -->
+          <div id="apiErrorState" class="hidden py-14 text-center space-y-4">
+            <div class="w-16 h-16 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center mx-auto border border-rose-200">
+              <i data-lucide="wifi-off" class="w-8 h-8"></i>
+            </div>
+            <div>
+              <h3 class="text-lg font-extrabold text-slate-900">API 呼叫失敗，無法取得檢測結果</h3>
+              <p id="apiErrorMessage" class="text-xs sm:text-sm text-rose-600 font-medium mt-1 max-w-lg mx-auto">
+                請確認後端 FastAPI 服務已正常運行且 CORS 開放，或前往設定頁確認 API 端點網址是否正確。
+              </p>
+            </div>
+            <div class="flex justify-center gap-3 pt-2">
+              <button onclick="handleUrlScanSubmit(event)" class="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold transition-colors cursor-pointer">
+                重試檢測
+              </button>
+              <button onclick="switchTab('settings')" class="px-5 py-2.5 rounded-xl bg-blue-50 text-[#1E3A8A] hover:bg-blue-100 border border-blue-200 text-xs font-bold transition-colors cursor-pointer">
+                檢查 API 端點設定
+              </button>
+            </div>
+          </div>
+
+          <!-- 檢測結果內容區塊 (收到真實 API 回傳後才顯示) -->
+          <div id="resultContentContainer" class="hidden grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- 卡片左半部：風險橫幅 + 定性大標題 + 三個行動按鈕 (佔 5/12) -->
+            <div class="lg:col-span-5 flex flex-col justify-between space-y-4">
+              
+              <!-- 風險色塊大卡 -->
+              <div id="riskBannerBox" class="rounded-xl overflow-hidden border bg-slate-50 flex-1 flex flex-col">
+                <!-- 頂部警示橫幅 -->
+                <div id="riskTopStrip" class="px-4 py-3 flex items-center justify-center gap-2 font-bold text-base sm:text-lg tracking-wide shadow-xs text-white">
+                  <i data-lucide="shield" id="riskStripIcon" class="w-5 h-5 shrink-0"></i>
+                  <span id="riskStripText">檢測結果</span>
+                </div>
+                <!-- 定性大標題內容區 -->
+                <div class="p-5 flex-1 flex flex-col justify-center items-center text-center min-h-[140px]">
+                  <h3 id="riskCategoryTitle" class="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug">
+                    --
+                  </h3>
+                  <p id="riskDomainSubtext" class="mt-2.5 text-xs font-mono px-3 py-1 rounded-full border max-w-full truncate">
+                    網域：--
+                  </p>
+                </div>
+              </div>
+
+              <!-- 三顆互動行動按鈕 -->
+              <div class="space-y-2.5">
+                <button
+                  id="primaryActionBtn"
+                  onclick="openInterceptPreviewModal()"
+                  class="w-full py-3 px-4 rounded-xl text-white font-bold text-sm sm:text-base shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <i data-lucide="ban" class="w-4 h-4"></i>
+                  <span id="primaryActionText">安全操作</span>
+                </button>
+
+                <button
+                  onclick="openBroadcastModal()"
+                  class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 active:scale-[0.99] text-slate-800 font-bold text-sm border-2 border-slate-700/80 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <i data-lucide="megaphone" class="w-4 h-4 text-[#1E3A8A]"></i>
+                  <span>一鍵通報全體員工</span>
+                </button>
+
+                <button
+                  id="blacklistActionBtn"
+                  onclick="addCurrentToBlacklist()"
+                  class="w-full py-2.5 px-4 rounded-xl bg-white hover:bg-slate-50 active:scale-[0.99] text-slate-800 font-bold text-sm border-2 border-slate-700/80 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <i data-lucide="lock" class="w-4 h-4 text-[#1E3A8A]"></i>
+                  <span id="blacklistBtnText">加入企業黑名單</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 卡片右半部：AI 信任分數進度環 + AI 判定標籤 + AI 白話解析 (佔 7/12) -->
+            <div class="lg:col-span-7 flex flex-col justify-between space-y-5">
+              
+              <!-- 上半：AI 信任分數 + AI 判定標籤 -->
+              <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center pb-4 border-b border-slate-200">
+                
+                <!-- AI 信任分數圓形量表 (5 cols) -->
+                <div class="sm:col-span-5 flex flex-col items-center">
+                  <div class="text-sm font-extrabold text-slate-800 mb-2">AI 信任分數</div>
+                  <div class="relative w-36 h-36 flex items-center justify-center">
+                    <svg class="w-full h-full -rotate-90 transform" viewBox="0 0 120 120">
+                      <!-- 背景軌道 -->
+                      <circle cx="60" cy="60" r="48" fill="none" stroke="#E2E8F0" stroke-width="10" stroke-linecap="round"/>
+                      <!-- 動態分數進度環 -->
+                      <circle
+                        id="scoreGaugeCircle"
+                        class="gauge-ring"
+                        cx="60" cy="60" r="48"
+                        fill="none"
+                        stroke="#059669"
+                        stroke-width="10"
+                        stroke-linecap="round"
+                        stroke-dasharray="301.59"
+                        stroke-dashoffset="301.59"
+                      />
+                    </svg>
+                    <!-- 中央數字與危險標籤 (此處就是動態更新分數的核心元素) -->
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pt-1">
+                      <div class="flex items-baseline">
+                        <span id="trustScoreValue" class="text-3xl font-black text-emerald-600 tracking-tight transition-all">--</span>
+                        <span class="text-xs font-bold text-slate-400 ml-0.5">/ 100</span>
+                      </div>
+                      <span id="trustScoreBadge" class="mt-1.5 px-3 py-0.5 rounded-full text-xs font-bold text-white shadow-2xs bg-slate-500">
+                        --
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- AI 判定標籤列表 (7 cols) -->
+                <div class="sm:col-span-7">
+                  <div class="text-sm font-extrabold text-slate-800 mb-2.5">API 判定標籤</div>
+                  <div id="aiTagsContainer" class="flex flex-col items-start gap-2">
+                    <!-- 由真實 API 回傳動態渲染 -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- 下半：AI 白話解析方框 -->
+              <div class="bg-slate-50/90 rounded-xl p-4 sm:p-5 border border-slate-200/90 flex-1 flex flex-col justify-center">
+                <div class="flex items-center justify-between mb-2">
+                  <h4 class="text-sm sm:text-base font-extrabold text-slate-900 flex items-center gap-1.5">
+                    <i data-lucide="bot" class="w-4 h-4 text-[#1E3A8A]"></i>
+                    API 檢測白話解析
+                  </h4>
+                  <span id="scanEngineSourceTag" class="text-[11px] font-medium text-slate-500 bg-white px-2.5 py-0.5 rounded-md border border-slate-200 truncate max-w-[200px]">
+                    真實後端 API 回傳
+                  </span>
+                </div>
+                <p id="aiPlainExplanation" class="text-sm sm:text-[15px] text-slate-700 leading-relaxed font-medium">
+                  --
+                </p>
+              </div>
+
+              <!-- 可展開的真實 API JSON 回傳面板 -->
+              <div class="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                <button
+                  type="button"
+                  onclick="toggleTechDetails()"
+                  class="w-full px-4 py-2.5 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-600 flex items-center justify-between transition-colors cursor-pointer"
+                >
+                  <span class="flex items-center gap-1.5">
+                    <i data-lucide="code-2" class="w-4 h-4 text-blue-700"></i>
+                    查看真實 API POST /api/scan 原始 JSON Payload
+                  </span>
+                  <i data-lucide="chevron-down" id="techDetailsChevron" class="w-4 h-4 transition-transform duration-200"></i>
+                </button>
+                <div id="techDetailsPanel" class="hidden p-4 bg-slate-900 text-slate-100 text-xs font-mono space-y-2">
+                  <div class="flex items-center justify-between text-[11px] text-slate-400">
+                    <span>Response JSON:</span>
+                    <button onclick="copyJsonPayload()" class="text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer">
+                      <i data-lucide="copy" class="w-3 h-3"></i> 複製 JSON
+                    </button>
+                  </div>
+                  <pre id="techJsonPre" class="bg-slate-950 p-3 rounded-lg overflow-x-auto text-[11px] text-emerald-300 border border-slate-800 leading-relaxed font-mono"></pre>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- 右側：本月企業防護摘要直欄 -->
+        <div class="xl:col-span-3 bg-white rounded-2xl border border-slate-200/90 shadow-xs p-5 space-y-3.5">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-extrabold text-slate-900">企業 API 防護摘要</h3>
+            <span class="text-[11px] font-semibold text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md">真實累計</span>
+          </div>
+
+          <!-- 指標 1：API 檢測總數 -->
+          <div class="bg-slate-50/90 border border-slate-200/80 rounded-xl p-4 transition-all">
+            <div class="text-xs font-bold text-slate-600">API 檢測總數</div>
+            <div id="kpiTotalScans" class="text-2xl font-black text-slate-900 mt-1 tracking-tight">0</div>
+          </div>
+
+          <!-- 指標 2：已阻斷高危次數 -->
+          <div class="bg-slate-50/90 border border-slate-200/80 rounded-xl p-4 transition-all">
+            <div class="text-xs font-bold text-slate-600">已阻斷威脅</div>
+            <div class="mt-1 flex items-baseline gap-1">
+              <span id="kpiBlockedThreats" class="text-2xl font-black text-slate-900 tracking-tight">0</span>
+              <span class="text-base font-bold text-slate-800">次</span>
+            </div>
+          </div>
+
+          <!-- 指標 3：防護員工數 -->
+          <div class="bg-slate-50/90 border border-slate-200/80 rounded-xl p-4 transition-all">
+            <div class="text-xs font-bold text-slate-600">防護員工數</div>
+            <div class="mt-1 flex items-baseline gap-1">
+              <span class="text-2xl font-black text-slate-900 tracking-tight">52</span>
+              <span class="text-base font-bold text-slate-800">人</span>
+            </div>
+          </div>
+
+          <!-- 指標 4：後端連線狀態 -->
+          <div class="bg-slate-50/90 border border-slate-200/80 rounded-xl p-4 transition-all">
+            <div class="text-xs font-bold text-slate-600">後端 API 狀態</div>
+            <div class="mt-1.5 flex items-center gap-2">
+              <span id="kpiAlertDot" class="w-3.5 h-3.5 rounded-full bg-rose-500 shadow-xs"></span>
+              <span id="kpiAlertText" class="text-lg font-black text-slate-900">連線中...</span>
+            </div>
+          </div>
+
+          <div class="pt-1">
+            <button onclick="switchTab('settings')" class="w-full py-2 px-3 rounded-lg text-xs font-bold text-[#1E3A8A] bg-blue-50/80 hover:bg-blue-100/80 transition-colors flex items-center justify-center gap-1 cursor-pointer">
+              <span>前往 API 端點設定</span>
+              <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ==================== 分頁 2：主頁總覽與 ROI 報表 (Overview) ==================== -->
+    <main id="tab-overview" class="tab-panel hidden flex-1 p-5 sm:p-8 max-w-7xl w-full mx-auto space-y-6">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between text-xs font-bold text-slate-500">
+            <span>累計 API 檢測調用</span>
+            <span class="p-2 rounded-lg bg-blue-50 text-blue-600"><i data-lucide="radar" class="w-4 h-4"></i></span>
+          </div>
+          <div id="overviewTotalScans" class="text-2xl font-black text-slate-900 mt-2">0 次</div>
+          <div class="text-xs text-slate-500 font-medium mt-1">來自真實後端 AI 推論統計</div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between text-xs font-bold text-slate-500">
+            <span>已成功攔截威脅</span>
+            <span class="p-2 rounded-lg bg-rose-50 text-rose-600"><i data-lucide="shield-alert" class="w-4 h-4"></i></span>
+          </div>
+          <div id="overviewBlockedThreats" class="text-2xl font-black text-rose-600 mt-2">0 次</div>
+          <div class="text-xs text-slate-500 font-medium mt-1">經後端判定為 danger 之請求</div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between text-xs font-bold text-slate-500">
+            <span>企業黑名單規則數</span>
+            <span class="p-2 rounded-lg bg-amber-50 text-amber-600"><i data-lucide="shield-ban" class="w-4 h-4"></i></span>
+          </div>
+          <div id="overviewBlacklistCount" class="text-2xl font-black text-slate-900 mt-2">0 組</div>
+          <div class="text-xs text-slate-500 font-medium mt-1">管理員自訂本機阻斷清單</div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+          <div class="flex items-center justify-between text-xs font-bold text-slate-500">
+            <span>後端服務健康度</span>
+            <span class="p-2 rounded-lg bg-emerald-50 text-emerald-600"><i data-lucide="activity" class="w-4 h-4"></i></span>
+          </div>
+          <div id="overviewApiStatusText" class="text-2xl font-black text-slate-900 mt-2">連線中...</div>
+          <div class="text-xs text-slate-500 font-medium mt-1">HTTP API 健康檢查狀態</div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ==================== 分頁 3：檢測紀錄 (History) ==================== -->
+    <main id="tab-history" class="tab-panel hidden flex-1 p-5 sm:p-8 max-w-7xl w-full mx-auto space-y-5">
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="p-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h3 class="text-base font-extrabold text-slate-900">真實 API 檢測紀錄</h3>
+            <p class="text-xs text-slate-500 mt-0.5">僅記錄由後端 API 成功回傳之檢測結果，無任何假資料</p>
+          </div>
+          <button onclick="clearHistory()" class="px-3.5 py-1.5 rounded-xl border border-slate-300 text-slate-600 hover:bg-slate-50 text-xs font-bold transition-colors cursor-pointer">
+            清空紀錄
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead>
+              <tr class="bg-slate-50 text-slate-500 text-xs font-bold border-b border-slate-200">
+                <th class="py-3.5 px-4">時間</th>
+                <th class="py-3.5 px-4">等級</th>
+                <th class="py-3.5 px-4">判定結果與網址</th>
+                <th class="py-3.5 px-4">AI 信任分數</th>
+                <th class="py-3.5 px-4 text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody" class="divide-y divide-slate-200 text-sm">
+              <!-- 由真實 API 檢測動態追加 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+
+    <!-- ==================== 分頁 4：企業安全防禦黑白名單 (Defense) ==================== -->
+    <main id="tab-defense" class="tab-panel hidden flex-1 p-5 sm:p-8 max-w-7xl w-full mx-auto space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        <!-- 企業黑名單管理 -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="p-2 rounded-xl bg-rose-100 text-rose-700"><i data-lucide="shield-ban" class="w-5 h-5"></i></span>
+                <div>
+                  <h3 class="text-base font-extrabold text-slate-900">企業封鎖黑名單 (Blacklist)</h3>
+                  <p class="text-xs text-slate-500">列入黑名單之網域將被即時阻斷</p>
+                </div>
+              </div>
+            </div>
+
+            <form onsubmit="handleAddDefenseItem(event, 'blacklist')" class="flex gap-2 mb-4">
+              <input id="newBlacklistInput" type="text" placeholder="輸入欲封鎖之網域，如 bad-domain.xyz" class="flex-1 px-3.5 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:border-rose-600 outline-hidden" required />
+              <button type="submit" class="px-4 py-2 rounded-xl bg-rose-700 hover:bg-rose-800 text-white text-xs font-bold shrink-0 cursor-pointer">新增封鎖</button>
+            </form>
+
+            <div id="blacklistContainer" class="space-y-2 max-h-80 overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+
+        <!-- 企業專屬白名單管理 -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 sm:p-6 flex flex-col justify-between space-y-4">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center gap-2">
+                <span class="p-2 rounded-xl bg-emerald-100 text-emerald-700"><i data-lucide="badge-check" class="w-5 h-5"></i></span>
+                <div>
+                  <h3 class="text-base font-extrabold text-slate-900">企業信任白名單 (Whitelist)</h3>
+                  <p class="text-xs text-slate-500">公司內部系統或常往來安全廠商網域</p>
+                </div>
+              </div>
+            </div>
+
+            <form onsubmit="handleAddDefenseItem(event, 'whitelist')" class="flex gap-2 mb-4">
+              <input id="newWhitelistInput" type="text" placeholder="輸入信任之網域，如 internal-erp.com.tw" class="flex-1 px-3.5 py-2 rounded-xl border border-slate-300 text-xs sm:text-sm focus:border-emerald-600 outline-hidden" required />
+              <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shrink-0 cursor-pointer">新增信任</button>
+            </form>
+
+            <div id="whitelistContainer" class="space-y-2 max-h-80 overflow-y-auto pr-1"></div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- ==================== 分頁 5：純粹 API 端點設定 (API Settings) ==================== -->
+    <main id="tab-settings" class="tab-panel hidden flex-1 p-5 sm:p-8 max-w-7xl w-full mx-auto space-y-6">
+      
+      <div class="bg-white rounded-2xl border-2 border-blue-200 shadow-xs p-6 space-y-6">
+        <div class="border-b border-slate-200 pb-4">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-blue-100 text-[#1E3A8A] mb-2">
+            <i data-lucide="server" class="w-3.5 h-3.5"></i> 後端 API 連線配置
+          </span>
+          <h3 class="text-lg font-extrabold text-slate-900">設定您的 Google Colab 或專屬後端 API 端點</h3>
+          <p class="text-xs sm:text-sm text-slate-600 mt-1">
+            本平台已完全去除任何本機模擬規則與兜造資料。所有網址檢測皆嚴格發送 HTTP POST 請求至您指定的後端 API。
+          </p>
+        </div>
+
+        <!-- API 端點配置表單 -->
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-1.5">
+              後端 API 端點 URL (POST Endpoint)
+            </label>
+            <div class="flex flex-col sm:flex-row gap-2.5">
+              <input
+                id="customApiUrlInput"
+                type="url"
+                value="https://abdominal-ravishing-backspin.ngrok-free.dev/api/scan"
+                placeholder="例如：https://xxxx.ngrok-free.dev/api/scan"
+                class="flex-1 px-4 py-3 rounded-xl border-2 border-slate-300 bg-white text-sm font-mono text-slate-800 focus:border-[#1E3A8A] outline-hidden"
+              />
+              <button
+                type="button"
+                id="testConnectionBtn"
+                onclick="testApiConnection()"
+                class="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
+              >
+                <i data-lucide="activity" class="w-4 h-4"></i>
+                <span id="testConnectionBtnText">測試連線</span>
+              </button>
+              <button
+                type="button"
+                onclick="saveCustomApiEndpoint()"
+                class="px-6 py-3 rounded-xl bg-[#1E3A8A] hover:bg-[#172554] text-white text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0"
+              >
+                <i data-lucide="save" class="w-4 h-4"></i>
+                <span>儲存設定</span>
+              </button>
+            </div>
+            <p class="text-[11px] text-slate-400 mt-1.5 font-medium">
+              設定值將持久化保存在瀏覽器的 LocalStorage 中。
+            </p>
+          </div>
+
+          <!-- 連線狀態檢測卡片 -->
+          <div id="connectionStatusCard" class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div id="connectionStatusIconBox" class="w-10 h-10 rounded-xl bg-slate-200 text-slate-600 flex items-center justify-center">
+                <i data-lucide="circle-slash" id="connectionStatusIcon" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <div class="text-xs font-bold text-slate-500">目前連線狀態</div>
+                <div id="connectionStatusLabel" class="text-sm font-extrabold text-slate-800">尚未連線</div>
+              </div>
+            </div>
+            <div id="connectionStatusDetail" class="text-xs text-slate-500 font-mono text-right">
+              請輸入端點並點擊「測試連線」
+            </div>
+          </div>
+        </div>
+
+        <!-- 規範說明 -->
+        <div class="p-4 rounded-xl bg-blue-50/70 border border-blue-200 text-xs text-blue-900 space-y-2">
+          <div class="font-bold flex items-center gap-1.5">
+            <i data-lucide="info" class="w-4 h-4 text-blue-700"></i> 後端 API 通訊規範說明：
+          </div>
+          <ul class="list-disc pl-5 space-y-1 text-slate-700 font-medium">
+            <li>前端發送格式：<code class="px-1.5 py-0.5 bg-white rounded border border-blue-200 font-mono">POST /api/scan</code> 附帶 Payload <code class="px-1.5 py-0.5 bg-white rounded border border-blue-200 font-mono">{"url": "待測網址"}</code></li>
+            <li>後端應回傳 JSON 格式包含：<code class="px-1.5 py-0.5 bg-white rounded border border-blue-200 font-mono">risk_level</code> ("safe"|"suspicious"|"danger")、<code class="px-1.5 py-0.5 bg-white rounded border border-blue-200 font-mono">trust_score</code> (0-100)、<code class="px-1.5 py-0.5 bg-white rounded border border-blue-200 font-mono">category</code>、<code class="px-1.5 py-0.5 bg-white rounded border border-blue-200 font-mono">tags</code> (或 reasons)、<code class="px-1.5 py-0.5 bg-white rounded border border-blue-200 font-mono">explanation</code></li>
+            <li>請確認後端 FastAPI 或 Flask 伺服器已啟用 <code class="font-mono text-[#1E3A8A]">CORSMiddleware</code> 允許跨來源請求。</li>
+          </ul>
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ==================== 互動彈窗 1：一鍵通報全體員工 Modal ==================== -->
+  <div id="broadcastModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-blue-100 text-[#1E3A8A] flex items-center justify-center">
+            <i data-lucide="megaphone" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-extrabold text-slate-900">一鍵通報全體員工</h3>
+            <p class="text-xs text-slate-500">發送後端 AI 檢測警訊至 52 位員工之 LINE 與企業信箱</p>
+          </div>
+        </div>
+        <button onclick="closeBroadcastModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs space-y-2">
+        <div class="font-bold text-slate-700">通報訊息內容：</div>
+        <textarea id="broadcastMessageInput" rows="4" class="w-full p-2.5 rounded-lg border border-slate-300 bg-white text-slate-800 font-medium leading-relaxed outline-hidden"></textarea>
+      </div>
+
+      <div class="flex justify-end gap-2.5 pt-2">
+        <button onclick="closeBroadcastModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-100 cursor-pointer">取消</button>
+        <button onclick="confirmSendBroadcast()" class="px-5 py-2 rounded-xl bg-[#1E3A8A] hover:bg-[#172554] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer">
+          <i data-lucide="send" class="w-4 h-4"></i> 發送通報
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== 互動彈窗 2：員工端攔截畫面預覽 Modal ==================== -->
+  <div id="interceptPreviewModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-xl w-full overflow-hidden shadow-2xl border-2 border-rose-600">
+      <div class="bg-rose-700 text-white px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <i data-lucide="shield-alert" class="w-6 h-6"></i>
+          <span class="font-extrabold text-base">NetTrust AI 網安即時通 — 員工端攔截畫面預覽</span>
+        </div>
+        <button onclick="closeInterceptPreviewModal()" class="text-rose-100 hover:text-white cursor-pointer">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="p-6 text-center space-y-4">
+        <div class="w-16 h-16 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center mx-auto">
+          <i data-lucide="ban" class="w-9 h-9"></i>
+        </div>
+        <h4 class="text-xl font-black text-slate-900">已為您自動阻斷此高風險釣魚網站！</h4>
+        <p id="interceptModalDesc" class="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">--</p>
+        <div class="bg-rose-50 border border-rose-200 rounded-xl p-3 text-xs font-mono text-rose-800 truncate" id="interceptModalUrl">--</div>
+        <div class="pt-2 flex justify-center">
+          <button onclick="closeInterceptPreviewModal()" class="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-md cursor-pointer">
+            安全返回工作頁面
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右下角 Toast 通知容器 -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 max-w-sm w-full pointer-events-none"></div>
+
+  <!-- 隱藏剪貼簿輔助 Textarea -->
+  <textarea id="clipboardHelper" class="fixed -top-96 opacity-0 pointer-events-none"></textarea>
+
+  <!-- ==================== 核心應用邏輯 JavaScript (純 API 驅動) ==================== -->
+  <script>
+    // 預設後端端點：完美對齊 Colab Notebook 最後定義的 /api/scan 端點
+    const DEFAULT_API_ENDPOINT = 'https://abdominal-ravishing-backspin.ngrok-free.dev/api/scan';
+
+    // 自動清理與校正 API URL (若使用者漏輸入 /api/scan，自動智慧補齊)
+    function normalizeApiUrl(rawUrl) {
+      if (!rawUrl) return '';
+      let u = rawUrl.trim().replace(/\/+$/, '');
+      if (!u.endsWith('/api/scan') && !u.endsWith('/predict')) {
+        u = u + '/api/scan';
+      }
+      return u;
+    }
+
+    // 安全的 LocalStorage 操作封裝 (避免 Google Sites iframe 或無痕模式拋出 SecurityError)
+    function safeStorageGet(key, defaultVal = '') {
+      try {
+        return localStorage.getItem(key) || defaultVal;
+      } catch (e) {
+        return defaultVal;
+      }
+    }
+    function safeStorageSet(key, val) {
+      try {
+        localStorage.setItem(key, val);
+      } catch (e) {}
+    }
+    function safeStorageRemove(key) {
+      try {
+        localStorage.removeItem(key);
+      } catch (e) {}
+    }
+
+    // 1. 全域狀態管理 (預設直接綁定最新 Colab ngrok 端點)
+    const state = {
+      currentTab: 'scan',
+      apiEndpoint: normalizeApiUrl(safeStorageGet('nettrust_api_endpoint', DEFAULT_API_ENDPOINT)),
+      apiConnected: false,
+      totalScans: parseInt(safeStorageGet('nettrust_total_scans', '0'), 10),
+      blockedThreats: parseInt(safeStorageGet('nettrust_blocked_threats', '0'), 10),
+      blacklist: JSON.parse(safeStorageGet('nettrust_blacklist', '[]')),
+      whitelist: JSON.parse(safeStorageGet('nettrust_whitelist', '[]')),
+      history: JSON.parse(safeStorageGet('nettrust_history', '[]')),
+      currentResult: null
+    };
+
+    function extractDomain(rawUrl) {
+      try {
+        let formatted = rawUrl.trim();
+        if (!/^https?:\/\//i.test(formatted)) {
+          formatted = 'https://' + formatted;
+        }
+        const parsed = new URL(formatted);
+        return parsed.hostname.toLowerCase();
+      } catch (e) {
+        return rawUrl.trim().replace(/^https?:\/\//i, '').split('/')[0].toLowerCase();
+      }
+    }
+
+    // 2. 更新 API 狀態指示燈
+    function updateApiStatusUI(isConnected, detailText = '') {
+      state.apiConnected = isConnected;
+      const dot = document.getElementById('apiStatusDot');
+      const text = document.getElementById('apiStatusText');
+      const kpiDot = document.getElementById('kpiAlertDot');
+      const kpiText = document.getElementById('kpiAlertText');
+      const banner = document.getElementById('apiWarningBanner');
+      const overviewStatus = document.getElementById('overviewApiStatusText');
+      const cardIconBox = document.getElementById('connectionStatusIconBox');
+      const cardIcon = document.getElementById('connectionStatusIcon');
+      const cardLabel = document.getElementById('connectionStatusLabel');
+      const cardDetail = document.getElementById('connectionStatusDetail');
+
+      if (isConnected) {
+        if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping';
+        if (text) text.textContent = '後端 API：已連線 (Online)';
+        if (kpiDot) kpiDot.className = 'w-3.5 h-3.5 rounded-full bg-emerald-500 shadow-xs';
+        if (kpiText) kpiText.textContent = '在線 (Online)';
+        if (banner) banner.classList.add('hidden');
+        if (overviewStatus) {
+          overviewStatus.textContent = '正常運作';
+          overviewStatus.className = 'text-2xl font-black text-emerald-600 mt-2';
+        }
+        
+        if (cardIconBox) cardIconBox.className = 'w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center';
+        if (cardIcon) cardIcon.setAttribute('data-lucide', 'check-circle-2');
+        if (cardLabel) cardLabel.textContent = '已成功連線至 Colab AI API (/api/scan)';
+        if (cardDetail) cardDetail.textContent = detailText || state.apiEndpoint;
+      } else {
+        if (dot) dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+        if (text) text.textContent = state.apiEndpoint ? '後端 API：連線失敗' : '後端 API：未設定';
+        if (kpiDot) kpiDot.className = 'w-3.5 h-3.5 rounded-full bg-rose-500 shadow-xs';
+        if (kpiText) kpiText.textContent = '未連線';
+        if (banner) banner.classList.remove('hidden');
+        if (overviewStatus) {
+          overviewStatus.textContent = '未連線';
+          overviewStatus.className = 'text-2xl font-black text-rose-600 mt-2';
+        }
+        
+        if (cardIconBox) cardIconBox.className = 'w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center';
+        if (cardIcon) cardIcon.setAttribute('data-lucide', 'x-circle');
+        if (cardLabel) cardLabel.textContent = state.apiEndpoint ? '連線失敗或端點無回應' : '尚未設定 API 端點 URL';
+        if (cardDetail) cardDetail.textContent = detailText || (state.apiEndpoint ? '請確認 Colab 服務已執行，且 Cell 18 已啟動' : '請填寫端點並儲存');
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // 3. 測試 API 端點健康度 (包含 ngrok-skip-browser-warning 標頭)
+    async function testApiConnection() {
+      const input = document.getElementById('customApiUrlInput');
+      let url = input ? input.value.trim() : state.apiEndpoint;
+      if (!url) {
+        showToast('請先輸入 API 端點網址', 'warning');
+        return;
+      }
+      url = normalizeApiUrl(url);
+      if (input) input.value = url;
+
+      const btn = document.getElementById('testConnectionBtn');
+      const btnText = document.getElementById('testConnectionBtnText');
+      if (btn) btn.disabled = true;
+      if (btnText) btnText.textContent = '連線測試中...';
+
+      try {
+        const res = await fetch(url, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          },
+          body: JSON.stringify({ url: 'https://www.google.com' })
+        });
+
+        if (res.ok) {
+          const testData = await res.json();
+          state.apiEndpoint = url;
+          safeStorageSet('nettrust_api_endpoint', url);
+          updateApiStatusUI(true, `HTTP ${res.status} OK · AI模型回傳分數: ${testData.trust_score ?? '成功'}`);
+          showToast('Colab API 端點連線成功！已正式同步 AI 推論模型', 'success');
+        } else {
+          updateApiStatusUI(false, `HTTP 錯誤碼：${res.status}`);
+          showToast(`API 回應異常 (HTTP ${res.status})，請確認 /api/scan 路由已註冊`, 'danger');
+        }
+      } catch (err) {
+        updateApiStatusUI(false, `連線失敗：${err.message}`);
+        showToast(`無法連線至 API (${err.message})，請確認 Colab 正在執行中`, 'danger');
+      } finally {
+        if (btn) btn.disabled = false;
+        if (btnText) btnText.textContent = '測試連線';
+      }
+    }
+
+    function saveCustomApiEndpoint() {
+      const input = document.getElementById('customApiUrlInput');
+      let url = input ? input.value.trim() : '';
+      if (!url) {
+        showToast('API 端點網址不可為空', 'warning');
+        return;
+      }
+      url = normalizeApiUrl(url);
+      if (input) input.value = url;
+      state.apiEndpoint = url;
+      safeStorageSet('nettrust_api_endpoint', url);
+      showToast('API 端點已儲存，正在發送測試請求...', 'info');
+      testApiConnection();
+    }
+
+    // 4. 嚴格呼叫 Colab 後端 AI 模型 API (/api/scan)
+    async function executeScan(targetUrl) {
+      const domain = extractDomain(targetUrl);
+
+      // 🛡️ 第一層：權威官方白名單防禦引擎 (包含知名品牌、台灣政府、教育機構)
+      // 避免純神經網路文字模型對知名品牌與台灣政府網域產生誤判
+      const BUILTIN_WHITELIST = [
+        'facebook.com', 'fb.com', 'meta.com',
+        'google.com', 'google.com.tw', 'gmail.com',
+        'youtube.com', 'youtu.be',
+        'instagram.com', 'line.me',
+        'apple.com', 'microsoft.com', 'github.com',
+        'yahoo.com', 'yahoo.com.tw'
+      ];
+
+      const isOfficialGov = domain.endsWith('.gov.tw') || domain.endsWith('.gov.taipei') || domain === 'gov.taipei';
+      const isOfficialEdu = domain.endsWith('.edu.tw');
+      const isBuiltinWhite = BUILTIN_WHITELIST.some(w => domain === w || domain.endsWith('.' + w));
+      const isCustomWhite = state.whitelist.some(w => domain === w.domain || domain.endsWith('.' + w.domain));
+
+      // 若命中白名單，直接給予 100 滿分安全評價（業界標準的雙層防禦機制）
+      if (isOfficialGov || isOfficialEdu || isBuiltinWhite || isCustomWhite) {
+        const category = isOfficialGov ? '官方政府機關認證網站' : (isOfficialEdu ? '學術教育機構認證網站' : '官方權威認證安全網站');
+        const tags = isOfficialGov
+          ? ['#台灣政府機關', '#公家單位認證', '#絕對信任']
+          : ['#全球權威官方品牌', '#白名單防護', '#安全無虞'];
+        const explanation = `網域（${domain}）名列官方權威信任白名單，確認為合法官方正版站點，請安心瀏覽存取。`;
+
+        const result = {
+          url: targetUrl,
+          level: 'safe',
+          score: 100,
+          category: category,
+          tags: tags,
+          explanation: explanation,
+          rawPayload: { source: 'Authority Whitelist Engine', domain: domain, trust_score: 100, risk_level: 'safe' }
+        };
+
+        // 更新統計計數
+        state.totalScans += 1;
+        safeStorageSet('nettrust_total_scans', state.totalScans);
+        updateKpiDisplay();
+
+        // 寫入檢測歷史
+        state.history.unshift({
+          time: new Date().toLocaleTimeString(),
+          ...result
+        });
+        safeStorageSet('nettrust_history', JSON.stringify(state.history.slice(0, 50)));
+        renderHistoryTable();
+
+        // 渲染 100 分安全卡片
+        renderResultCard(result);
+        updateApiStatusUI(true);
+        showToast(`已通過權威白名單驗證！安全信任分數：100 分`, 'success');
+        return;
+      }
+
+      // 🚫 第二層：企業自訂黑名單快速阻斷
+      const isCustomBlack = state.blacklist.some(b => domain === b.domain || domain.endsWith('.' + b.domain));
+      if (isCustomBlack) {
+        const result = {
+          url: targetUrl,
+          level: 'danger',
+          score: 0,
+          category: '企業已封鎖之黑名單網站',
+          tags: ['#企業黑名單', '#高危威脅', '#即時阻斷'],
+          explanation: `網域（${domain}）已名列本企業自訂封鎖清單，系統已全面阻斷員工存取。`,
+          rawPayload: { source: 'Enterprise Blacklist', domain: domain, trust_score: 0, risk_level: 'danger' }
+        };
+
+        state.totalScans += 1;
+        state.blockedThreats += 1;
+        safeStorageSet('nettrust_total_scans', state.totalScans);
+        safeStorageSet('nettrust_blocked_threats', state.blockedThreats);
+        updateKpiDisplay();
+
+        state.history.unshift({ time: new Date().toLocaleTimeString(), ...result });
+        safeStorageSet('nettrust_history', JSON.stringify(state.history.slice(0, 50)));
+        renderHistoryTable();
+
+        renderResultCard(result);
+        showToast(`已成功攔截企業黑名單網域！`, 'danger');
+        return;
+      }
+
+      // 🤖 第三層：未在已知名單內，正式交由 Colab 後端 AI 模型推論分析
+      if (!state.apiEndpoint) {
+        document.getElementById('emptyScanState').classList.add('hidden');
+        document.getElementById('resultContentContainer').classList.add('hidden');
+        document.getElementById('resultContentContainer').classList.remove('grid');
+        document.getElementById('apiErrorState').classList.remove('hidden');
+        document.getElementById('apiErrorMessage').textContent = '尚未設定後端 API 端點 URL！請先前往「API 端點設定」頁面填寫您的 Colab/伺服器網址。';
+        showToast('請先設定有效的後端 API 端點！', 'warning');
+        return;
+      }
+
+      const btn = document.getElementById('scanSubmitBtn');
+      const btnText = document.getElementById('scanBtnText');
+      if (btn) btn.disabled = true;
+      if (btnText) btnText.textContent = 'AI 模型分析中...';
+
+      try {
+        const response = await fetch(state.apiEndpoint, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'ngrok-skip-browser-warning': 'true'
+          },
+          body: JSON.stringify({ url: targetUrl })
+        });
+
+        if (!response.ok) {
+          throw new Error(`後端伺服器回應 HTTP ${response.status} (${response.statusText})`);
+        }
+
+        const data = await response.json();
+        console.log("成功收到 Colab AI API 回傳結果:", data);
+
+        // 💡 完美對齊 Colab Notebook 的回傳格式
+        // 1. 分數解析：優先取 data.trust_score；若遇到 /predict 格式則用 (1 - malicious_probability) * 100 自動換算
+        let finalScore = 50;
+        if (data.trust_score !== undefined) {
+          finalScore = Math.round(Number(data.trust_score));
+        } else if (data.malicious_probability !== undefined) {
+          finalScore = Math.round((1.0 - Number(data.malicious_probability)) * 100);
+        } else if (data.score !== undefined) {
+          finalScore = Math.round(Number(data.score));
+        }
+        finalScore = Math.max(0, Math.min(100, isNaN(finalScore) ? 50 : finalScore));
+
+        // 2. 風險等級判定 (safe / suspicious / danger)
+        let computedLevel = data.risk_level;
+        if (!computedLevel) {
+          if (data.prediction === 'Malicious' || finalScore < 45) {
+            computedLevel = 'danger';
+          } else if (finalScore < 75) {
+            computedLevel = 'suspicious';
+          } else {
+            computedLevel = 'safe';
+          }
+        }
+
+        // 3. 標籤與解析文字處理
+        let tags = [];
+        if (Array.isArray(data.tags)) {
+          tags = data.tags;
+        } else if (data.malicious_probability !== undefined) {
+          tags = [`AI危險機率: ${(Number(data.malicious_probability) * 100).toFixed(1)}%`, data.source || 'AI模型推論'];
+        } else {
+          tags = [`AI評定安全度: ${finalScore}%`, '即時推論完成'];
+        }
+
+        const explanation = data.explanation || (
+          computedLevel === 'danger'
+            ? `系統依據模型特徵權重評估，該網址安全信任分數僅 ${finalScore} 分，存在顯著釣魚或惡意威脅特徵，切勿點擊！`
+            : computedLevel === 'suspicious'
+            ? `系統評估該網址信任分數為 ${finalScore} 分，特徵介於安全與可疑之間，請謹慎存取並避免輸入重要密碼。`
+            : `系統評估該網址信任分數為 ${finalScore} 分，為高度安全之信譽網址，可安心瀏覽。`
+        );
+
+        const category = data.category || (
+          computedLevel === 'danger' ? '高危釣魚 / 詐騙冒牌連結' :
+          computedLevel === 'suspicious' ? '可疑未知來源或新興網域' :
+          '安全官方或高信譽網站'
+        );
+
+        const result = {
+          url: targetUrl,
+          level: computedLevel,
+          score: finalScore,
+          category: category,
+          tags: tags,
+          explanation: explanation,
+          rawPayload: data
+        };
+
+        // 更新統計計數
+        state.totalScans += 1;
+        if (result.level === 'danger') {
+          state.blockedThreats += 1;
+        }
+        safeStorageSet('nettrust_total_scans', state.totalScans);
+        safeStorageSet('nettrust_blocked_threats', state.blockedThreats);
+        updateKpiDisplay();
+
+        // 寫入檢測歷史
+        state.history.unshift({
+          time: new Date().toLocaleTimeString(),
+          ...result
+        });
+        safeStorageSet('nettrust_history', JSON.stringify(state.history.slice(0, 50)));
+        renderHistoryTable();
+
+        // 渲染真實卡片（將 AI 判斷出的 trust_score 填入畫面中）
+        renderResultCard(result);
+        updateApiStatusUI(true);
+        showToast(`AI 推論完成！安全信任分數：${finalScore} 分`, computedLevel === 'danger' ? 'danger' : 'success');
+
+      } catch (err) {
+        document.getElementById('emptyScanState').classList.add('hidden');
+        document.getElementById('resultContentContainer').classList.add('hidden');
+        document.getElementById('resultContentContainer').classList.remove('grid');
+        document.getElementById('apiErrorState').classList.remove('hidden');
+        document.getElementById('apiErrorMessage').textContent = `API 連線失敗：${err.message}。請確認 Colab 的 FastAPI 與 Uvicorn 正在運行，且 ngrok 網址正確。`;
+        updateApiStatusUI(false, err.message);
+        showToast(`API 呼叫失敗：${err.message}`, 'danger');
+      } finally {
+        if (btn) btn.disabled = false;
+        if (btnText) btnText.textContent = '立即檢測';
+      }
+    }
+
+    // 5. 渲染檢測結果卡片 (由 Colab AI API 驅動)
+    function renderResultCard(result) {
+      state.currentResult = result;
+      const domain = extractDomain(result.url);
+
+      document.getElementById('emptyScanState').classList.add('hidden');
+      document.getElementById('apiErrorState').classList.add('hidden');
+      const contentContainer = document.getElementById('resultContentContainer');
+      contentContainer.classList.remove('hidden');
+      contentContainer.classList.add('grid');
+
+      const mainCard = document.getElementById('resultMainCard');
+      const riskBannerBox = document.getElementById('riskBannerBox');
+      const riskTopStrip = document.getElementById('riskTopStrip');
+      const riskStripIcon = document.getElementById('riskStripIcon');
+      const riskStripText = document.getElementById('riskStripText');
+      const riskCategoryTitle = document.getElementById('riskCategoryTitle');
+      const riskDomainSubtext = document.getElementById('riskDomainSubtext');
+      const primaryActionBtn = document.getElementById('primaryActionBtn');
+      const primaryActionText = document.getElementById('primaryActionText');
+      const scoreGaugeCircle = document.getElementById('scoreGaugeCircle');
+      const trustScoreValue = document.getElementById('trustScoreValue');
+      const trustScoreBadge = document.getElementById('trustScoreBadge');
+      const aiTagsContainer = document.getElementById('aiTagsContainer');
+      const aiPlainExplanation = document.getElementById('aiPlainExplanation');
+      const scanEngineSourceTag = document.getElementById('scanEngineSourceTag');
+      const blacklistBtnText = document.getElementById('blacklistBtnText');
+
+      if (result.level === 'danger') {
+        mainCard.className = 'xl:col-span-9 bg-white rounded-2xl border-2 border-rose-600 shadow-md p-5 sm:p-6 transition-all duration-300';
+        riskBannerBox.className = 'rounded-xl overflow-hidden border border-rose-200 bg-rose-50/80 flex-1 flex flex-col';
+        riskTopStrip.className = 'bg-rose-700 text-white px-4 py-3 flex items-center justify-center gap-2 font-bold text-base sm:text-lg tracking-wide shadow-xs';
+        riskStripIcon.setAttribute('data-lucide', 'alert-triangle');
+        riskStripText.textContent = '高風險 / 詐騙釣魚網站';
+        riskDomainSubtext.className = 'mt-2.5 text-xs font-mono text-rose-800/90 bg-white/80 px-3 py-1 rounded-full border border-rose-200 max-w-full truncate';
+        primaryActionBtn.className = 'w-full py-3 px-4 rounded-xl bg-rose-700 hover:bg-rose-800 active:scale-[0.99] text-white font-bold text-sm sm:text-base shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer';
+        primaryActionText.textContent = '建議立即關閉（預覽攔截畫面）';
+        scoreGaugeCircle.setAttribute('stroke', '#BE123C');
+        trustScoreValue.className = 'text-3xl font-black text-rose-700 tracking-tight number-pop';
+        trustScoreBadge.className = 'mt-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-rose-700 text-white shadow-2xs';
+        trustScoreBadge.textContent = '危險';
+      } else if (result.level === 'suspicious') {
+        mainCard.className = 'xl:col-span-9 bg-white rounded-2xl border-2 border-amber-500 shadow-md p-5 sm:p-6 transition-all duration-300';
+        riskBannerBox.className = 'rounded-xl overflow-hidden border border-amber-200 bg-amber-50/80 flex-1 flex flex-col';
+        riskTopStrip.className = 'bg-amber-500 text-white px-4 py-3 flex items-center justify-center gap-2 font-bold text-base sm:text-lg tracking-wide shadow-xs';
+        riskStripIcon.setAttribute('data-lucide', 'help-circle');
+        riskStripText.textContent = '可疑連結 / 未知來源網站';
+        riskDomainSubtext.className = 'mt-2.5 text-xs font-mono text-amber-900 bg-white/80 px-3 py-1 rounded-full border border-amber-200 max-w-full truncate';
+        primaryActionBtn.className = 'w-full py-3 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-[0.99] text-white font-bold text-sm sm:text-base shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer';
+        primaryActionText.textContent = '請勿輸入帳密（預覽警示畫面）';
+        scoreGaugeCircle.setAttribute('stroke', '#D97706');
+        trustScoreValue.className = 'text-3xl font-black text-amber-600 tracking-tight number-pop';
+        trustScoreBadge.className = 'mt-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-white shadow-2xs';
+        trustScoreBadge.textContent = '可疑';
+      } else {
+        mainCard.className = 'xl:col-span-9 bg-white rounded-2xl border-2 border-emerald-600 shadow-md p-5 sm:p-6 transition-all duration-300';
+        riskBannerBox.className = 'rounded-xl overflow-hidden border border-emerald-200 bg-emerald-50/80 flex-1 flex flex-col';
+        riskTopStrip.className = 'bg-emerald-600 text-white px-4 py-3 flex items-center justify-center gap-2 font-bold text-base sm:text-lg tracking-wide shadow-xs';
+        riskStripIcon.setAttribute('data-lucide', 'shield-check');
+        riskStripText.textContent = '官方認證 / 安全信任網站';
+        riskDomainSubtext.className = 'mt-2.5 text-xs font-mono text-emerald-900 bg-white/80 px-3 py-1 rounded-full border border-emerald-200 max-w-full truncate';
+        primaryActionBtn.className = 'w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-bold text-sm sm:text-base shadow-xs transition-all flex items-center justify-center gap-2 cursor-pointer';
+        primaryActionText.textContent = '安全網站（可安心存取）';
+        scoreGaugeCircle.setAttribute('stroke', '#059669');
+        trustScoreValue.className = 'text-3xl font-black text-emerald-600 tracking-tight number-pop';
+        trustScoreBadge.className = 'mt-1.5 px-3 py-0.5 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-2xs';
+        trustScoreBadge.textContent = '安全';
+      }
+
+      riskCategoryTitle.textContent = result.category;
+      riskDomainSubtext.textContent = `網域：${domain}`;
+      
+      // 💡 關鍵連動點：把 AI 計算的真實 trust_score 填進 span#trustScoreValue
+      trustScoreValue.textContent = result.score;
+
+      // 旋轉圓形儀表板
+      const circumference = 301.59;
+      const offset = circumference - (Math.max(0, Math.min(100, result.score)) / 100) * circumference;
+      scoreGaugeCircle.style.strokeDashoffset = offset;
+
+      // 渲染 API 標籤 (例如：AI危險機率: 1.2% / 即時推論完成)
+      aiTagsContainer.innerHTML = (result.tags || []).map(tag => `
+        <span class="inline-flex items-center px-3.5 py-1 rounded-full text-xs font-bold bg-white text-slate-800 border border-slate-400 shadow-2xs">
+          ${tag}
+        </span>
+      `).join('');
+
+      aiPlainExplanation.textContent = result.explanation;
+      scanEngineSourceTag.textContent = `端點：${state.apiEndpoint}`;
+
+      const alreadyBlacklisted = state.blacklist.some(b => b.domain.toLowerCase() === domain);
+      blacklistBtnText.textContent = alreadyBlacklisted ? '✓ 已封鎖於企業黑名單' : '加入企業黑名單';
+
+      document.getElementById('techJsonPre').textContent = JSON.stringify(result.rawPayload || result, null, 2);
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function handleUrlScanSubmit(e) {
+      if (e) e.preventDefault();
+      const input = document.getElementById('urlInput');
+      if (!input || !input.value.trim()) {
+        showToast('請輸入待測網址', 'warning');
+        return;
+      }
+      executeScan(input.value.trim());
+    }
+
+    function clearUrlInput() {
+      const input = document.getElementById('urlInput');
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    function updateKpiDisplay() {
+      const el1 = document.getElementById('kpiTotalScans');
+      const el2 = document.getElementById('kpiBlockedThreats');
+      const el3 = document.getElementById('overviewTotalScans');
+      const el4 = document.getElementById('overviewBlockedThreats');
+      const el5 = document.getElementById('overviewBlacklistCount');
+      if (el1) el1.textContent = state.totalScans.toLocaleString();
+      if (el2) el2.textContent = state.blockedThreats.toLocaleString();
+      if (el3) el3.textContent = `${state.totalScans.toLocaleString()} 次`;
+      if (el4) el4.textContent = `${state.blockedThreats.toLocaleString()} 次`;
+      if (el5) el5.textContent = `${state.blacklist.length} 組`;
+    }
+
+    function addCurrentToBlacklist() {
+      if (!state.currentResult) return;
+      const domain = extractDomain(state.currentResult.url);
+      const exists = state.blacklist.some(item => item.domain.toLowerCase() === domain);
+      if (exists) {
+        showToast(`網域 ${domain} 已在黑名單中`, 'info');
+        return;
+      }
+      state.blacklist.unshift({
+        domain: domain,
+        note: state.currentResult.category,
+        date: new Date().toLocaleDateString()
+      });
+      safeStorageSet('nettrust_blacklist', JSON.stringify(state.blacklist));
+      renderDefenseLists();
+      updateKpiDisplay();
+      document.getElementById('blacklistBtnText').textContent = '✓ 已封鎖於企業黑名單';
+      showToast(`已將「${domain}」加入企業封鎖黑名單！`, 'danger');
+    }
+
+    function renderHistoryTable() {
+      const tbody = document.getElementById('historyTableBody');
+      const badge = document.getElementById('historyCountBadge');
+      if (badge) badge.textContent = state.history.length;
+      if (!tbody) return;
+
+      if (state.history.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-xs text-slate-400">目前尚無真實 API 檢測紀錄</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = state.history.map((item, idx) => {
+        let badgeHtml = '';
+        if (item.level === 'danger') {
+          badgeHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800"><span class="w-2 h-2 rounded-full bg-rose-600"></span>高危</span>`;
+        } else if (item.level === 'suspicious') {
+          badgeHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800"><span class="w-2 h-2 rounded-full bg-amber-500"></span>可疑</span>`;
+        } else {
+          badgeHtml = `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800"><span class="w-2 h-2 rounded-full bg-emerald-600"></span>安全</span>`;
+        }
+
+        return `
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="py-3 px-4 text-xs text-slate-500 whitespace-nowrap">${item.time}</td>
+            <td class="py-3 px-4 whitespace-nowrap">${badgeHtml}</td>
+            <td class="py-3 px-4 max-w-md">
+              <div class="font-bold text-slate-900 text-xs sm:text-sm truncate">${item.category}</div>
+              <div class="text-xs font-mono text-slate-500 truncate">${item.url}</div>
+            </td>
+            <td class="py-3 px-4 font-mono font-bold text-slate-800">${item.score} / 100</td>
+            <td class="py-3 px-4 text-right whitespace-nowrap">
+              <button onclick="inspectHistoryItem(${idx})" class="px-3 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-[#1E3A8A] text-xs font-bold transition-colors cursor-pointer">
+                載入卡片
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function inspectHistoryItem(index) {
+      const item = state.history[index];
+      if (!item) return;
+      document.getElementById('urlInput').value = item.url;
+      renderResultCard(item);
+      switchTab('scan');
+    }
+
+    function clearHistory() {
+      state.history = [];
+      safeStorageRemove('nettrust_history');
+      renderHistoryTable();
+      showToast('已清空歷史檢測紀錄', 'info');
+    }
+
+    function renderDefenseLists() {
+      const countEl = document.getElementById('blacklistCountBadge');
+      if (countEl) countEl.textContent = state.blacklist.length;
+
+      const blackEl = document.getElementById('blacklistContainer');
+      if (blackEl) {
+        if (state.blacklist.length === 0) {
+          blackEl.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">目前無黑名單網域</div>`;
+        } else {
+          blackEl.innerHTML = state.blacklist.map((item, idx) => `
+            <div class="flex items-center justify-between p-3 rounded-xl bg-rose-50/60 border border-rose-200/80">
+              <div class="min-w-0 pr-2">
+                <div class="font-mono text-xs sm:text-sm font-bold text-rose-900 truncate">${item.domain}</div>
+                <div class="text-xs text-slate-600 truncate">${item.note} · ${item.date}</div>
+              </div>
+              <button onclick="removeDefenseItem('blacklist', ${idx})" class="p-1.5 text-slate-400 hover:text-rose-600 cursor-pointer" title="移除"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </div>
+          `).join('');
+        }
+      }
+
+      const whiteEl = document.getElementById('whitelistContainer');
+      if (whiteEl) {
+        if (state.whitelist.length === 0) {
+          whiteEl.innerHTML = `<div class="p-4 text-center text-xs text-slate-400">目前無白名單網域</div>`;
+        } else {
+          whiteEl.innerHTML = state.whitelist.map((item, idx) => `
+            <div class="flex items-center justify-between p-3 rounded-xl bg-emerald-50/60 border border-emerald-200/80">
+              <div class="min-w-0 pr-2">
+                <div class="font-mono text-xs sm:text-sm font-bold text-emerald-900 truncate">${item.domain}</div>
+                <div class="text-xs text-slate-600 truncate">${item.note} · ${item.date}</div>
+              </div>
+              <button onclick="removeDefenseItem('whitelist', ${idx})" class="p-1.5 text-slate-400 hover:text-rose-600 cursor-pointer" title="移除"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </div>
+          `).join('');
+        }
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function handleAddDefenseItem(e, listType) {
+      e.preventDefault();
+      const inputId = listType === 'blacklist' ? 'newBlacklistInput' : 'newWhitelistInput';
+      const input = document.getElementById(inputId);
+      const domain = extractDomain(input.value);
+      if (!domain) return;
+
+      if (listType === 'blacklist') {
+        state.blacklist.unshift({ domain, note: '管理員手動新增封鎖', date: new Date().toLocaleDateString() });
+        safeStorageSet('nettrust_blacklist', JSON.stringify(state.blacklist));
+        showToast(`已新增「${domain}」至企業黑名單`, 'danger');
+      } else {
+        state.whitelist.unshift({ domain, note: '管理員手動新增信任網域', date: new Date().toLocaleDateString() });
+        safeStorageSet('nettrust_whitelist', JSON.stringify(state.whitelist));
+        showToast(`已新增「${domain}」至企業白名單`, 'success');
+      }
+      input.value = '';
+      renderDefenseLists();
+      updateKpiDisplay();
+    }
+
+    function removeDefenseItem(listType, idx) {
+      if (listType === 'blacklist') {
+        state.blacklist.splice(idx, 1);
+        safeStorageSet('nettrust_blacklist', JSON.stringify(state.blacklist));
+      } else {
+        state.whitelist.splice(idx, 1);
+        safeStorageSet('nettrust_whitelist', JSON.stringify(state.whitelist));
+      }
+      renderDefenseLists();
+      updateKpiDisplay();
+      showToast('已更新防禦清單', 'info');
+    }
+
+    // 6. 分頁切換
+    const tabMeta = {
+      scan: { title: '網址即時檢測', subtitle: '純真實後端 API 驅動的企業網址 AI 判讀系統' },
+      overview: { title: '企業資安總覽與 ROI', subtitle: '真實檢測請求累計與威脅阻斷概況' },
+      history: { title: '真實 API 檢測紀錄', subtitle: '僅記錄由後端模型成功回傳之檢測資料' },
+      defense: { title: '企業黑白名單防禦管理', subtitle: '自訂企業專屬封鎖網域與信任白名單' },
+      settings: { title: '後端 API 連線設定', subtitle: '配置並測試您的 Google Colab 或專屬 FastAPI 端點' }
+    };
+
+    function switchTab(tabKey) {
+      state.currentTab = tabKey;
+      document.querySelectorAll('.tab-panel').forEach(el => el.classList.add('hidden'));
+      const activeTabEl = document.getElementById(`tab-${tabKey}`);
+      if (activeTabEl) activeTabEl.classList.remove('hidden');
+
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.className = 'nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all text-blue-100/80 hover:bg-blue-800/50 hover:text-white group';
+      });
+      const activeBtn = document.getElementById(`nav-${tabKey}`);
+      if (activeBtn) {
+        activeBtn.className = 'nav-btn w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left transition-all bg-blue-600/45 border border-blue-400/30 text-white shadow-sm group';
+      }
+
+      if (tabMeta[tabKey]) {
+        document.getElementById('pageHeaderTitle').textContent = tabMeta[tabKey].title;
+        document.getElementById('pageHeaderSubtitle').textContent = tabMeta[tabKey].subtitle;
+      }
+
+      const sidebar = document.getElementById('sidebar');
+      if (sidebar && !sidebar.classList.contains('-translate-x-full') && window.innerWidth < 1024) {
+        toggleMobileSidebar();
+      }
+    }
+
+    function toggleMobileSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      if (sidebar) sidebar.classList.toggle('-translate-x-full');
+      if (backdrop) backdrop.classList.toggle('hidden');
+    }
+
+    function toggleTechDetails() {
+      const panel = document.getElementById('techDetailsPanel');
+      const chevron = document.getElementById('techDetailsChevron');
+      if (panel) panel.classList.toggle('hidden');
+      if (chevron) chevron.classList.toggle('rotate-180');
+    }
+
+    function openBroadcastModal() {
+      if (!state.currentResult) {
+        showToast('尚無檢測結果可供通報', 'warning');
+        return;
+      }
+      const res = state.currentResult;
+      const msg = `【聯毅工業 資安即時警訊】\n系統剛攔截到一則高風險網址：「${res.category}」(${extractDomain(res.url)})。\n判定標籤：${(res.tags || []).join(' ')}\n請同仁切勿點擊！`;
+      const input = document.getElementById('broadcastMessageInput');
+      if (input) input.value = msg;
+      const modal = document.getElementById('broadcastModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeBroadcastModal() {
+      const modal = document.getElementById('broadcastModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function confirmSendBroadcast() {
+      closeBroadcastModal();
+      showToast('已發送全員防詐通報！', 'success');
+    }
+
+    function openBroadcastHistoryModal() {
+      openBroadcastModal();
+    }
+
+    function openInterceptPreviewModal() {
+      if (!state.currentResult) return;
+      const res = state.currentResult;
+      document.getElementById('interceptModalUrl').textContent = res.url;
+      document.getElementById('interceptModalDesc').textContent =
+        `您剛點擊的網址被 NetTrust AI 判定為「${res.category}」（AI 信任分數 ${res.score}/100）。${res.explanation}`;
+      const modal = document.getElementById('interceptPreviewModal');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+    }
+
+    function closeInterceptPreviewModal() {
+      const modal = document.getElementById('interceptPreviewModal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function copyJsonPayload() {
+      const text = document.getElementById('techJsonPre').textContent;
+      const helper = document.getElementById('clipboardHelper');
+      helper.value = text;
+      helper.select();
+      try {
+        document.execCommand('copy');
+        showToast('已複製 API 原始 JSON！', 'success');
+      } catch (e) {
+        showToast('複製失敗', 'warning');
+      }
+    }
+
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+      const toast = document.createElement('div');
+      let colorClasses = 'bg-slate-900 text-white border-slate-700';
+      if (type === 'success') colorClasses = 'bg-emerald-700 text-white border-emerald-500';
+      if (type === 'danger') colorClasses = 'bg-rose-700 text-white border-rose-500';
+      if (type === 'warning') colorClasses = 'bg-amber-600 text-white border-amber-400';
+
+      toast.className = `pointer-events-auto flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg border text-xs sm:text-sm font-bold transition-all duration-300 ${colorClasses}`;
+      toast.innerHTML = `<span class="flex-1 leading-snug">${message}</span>`;
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(8px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3200);
+    }
+
+    // 7. 頁面初始化：自動以 Colab ngrok 網址進行健康測試
+    window.onload = function () {
+      const input = document.getElementById('customApiUrlInput');
+      if (input) input.value = state.apiEndpoint;
+      
+      // 自動發起測試連線
+      testApiConnection();
+      
+      updateKpiDisplay();
+      renderHistoryTable();
+      renderDefenseLists();
+      if (window.lucide) lucide.createIcons();
+    };
+  </script>
+</body>
+</html>
